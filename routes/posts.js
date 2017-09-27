@@ -5,6 +5,17 @@ var upload = multer({ dest: './public/images' })
 var mongo = require('mongodb');
 var db = require('monk')('localhost/nodeblog');
 
+/* Show individual blog */
+router.get('/show/:id', function(req, res, next) {
+  var posts = db.get('posts');
+
+  posts.findById(req.params.id, function(err, post){
+    res.render('show',{
+      'post': post
+    });
+  });
+});
+
 /* GET Posts listing. */
 router.get('/add', function(req, res, next) {
   var categories = db.get('categories');
@@ -16,7 +27,9 @@ router.get('/add', function(req, res, next) {
   });
 });
 
-/* Post Posts listing. */
+
+
+/* Post for Posts listing. */
 router.post('/add', upload.single('mainimage'), function(req, res, next) {
 // get the form values
 
@@ -61,6 +74,59 @@ router.post('/add', upload.single('mainimage'), function(req, res, next) {
         res.location('/');
         res.redirect('/');
       }
+    });
+  }
+});
+
+/* Post Posts listing. */
+router.post('/addcomment', function(req, res, next) {
+
+  var name = req.body.name;
+  var email = req.body.email;
+  var body = req.body.body;
+  var postid = req.body.postid;
+  var commentdate = new Date();
+
+  // Form Validation
+  req.checkBody('name', 'Name field is required').notEmpty();
+  req.checkBody('email', 'Email field is required, but never displayed').notEmpty();
+  req.checkBody('email', 'Email is not formatted properly').isEmail();
+  req.checkBody('body', 'Body field is required').notEmpty();
+
+  // Check Errors
+  var errors = req.validationErrors();
+
+  if(errors){
+    var posts = db.get('posts');
+    posts.findById(postid, function(err, post){
+      res.render('show',{
+        'errors': errors,
+        'post': post
+      });
+    });
+  } else {
+    var comment = {
+      'name': name,
+      'email': email,
+      'body': body,
+      'commentdate': commentdate
+    }
+    var posts = db.get('posts');
+
+    posts.update({
+      '_id':postid
+    },{
+      $push:{
+        'comments':comment
+      }
+    },function(err, doc){
+        if(err){
+          throw err;
+        } else{
+          req.flash('success', 'Comment Added');
+          res.location('/posts/show/'+ postid);
+          res.redirect('/posts/show/'+ postid);
+        }
     });
   }
 });
