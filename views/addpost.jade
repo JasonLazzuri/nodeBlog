@@ -27,3 +27,7 @@ block content
 				option(value='Jason L') Jason L
 				option(value='John Doe') John Doe
 		input.btn.btn-default(name='submit',type='submit',value='Save')
+
+		script(src="//cdn.ckeditor.com/4.7.3/standard/ckeditor.js")
+		script
+			| CKEDITOR.replace('body');
