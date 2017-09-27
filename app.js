@@ -24,6 +24,16 @@ var app = express();
 
 app.locals.moment = require('moment');
 
+app.locals.truncateText = function(text, length){
+    var truncatedText = text.substring(0, length);
+    return truncatedText;
+}
+
+app.locals.addPeriods = function(text){
+  var text = '...';
+  return text;
+}
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
